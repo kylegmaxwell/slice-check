@@ -1,0 +1,30 @@
+{
+  "name": "slice-check",
+  "version": "0.0.1",
+  "description": "This is a tool to visualize segmentation results.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kylegmaxwell/slice-check.git"
+  },
+  "keywords": [
+    "3D",
+    "slices",
+    "dicom",
+    "stl"
+  ],
+  "author": "Kyle Maxwell",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kylegmaxwell/slice-check/issues"
+  },
+  "homepage": "https://github.com/kylegmaxwell/slice-check#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "three": "^0.79.0"
+  }
+}

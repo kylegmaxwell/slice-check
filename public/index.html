@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Slice Check</title>
+    <!-- <link rel="stylesheet" type="text/css" href="main.css"> -->
+    <link rel="shortcut icon" href="favicon.ico">
+</head>
+<body onload="handleLoad()">
+    <header>
+        <h2>Slice Check</h2>
+    </header>
+    <main>
+        <section>
+            <details>
+                <summary>Instructions</summary>
+                Tap any tile to reveal it's contents, and hope it's not a bomb.<br/>
+                Tap and hold to mark the tile as a bomb.<br/>
+                When an empty tile's neighboring mines have been marked, tap and hold to reveal its neighbors.<br/>
+            </details>
+            <div id="viewport">
+                <!-- THREE -->
+            </div>
+        </section>
+
+    </main>
+    <script src="node_modules/three/build/three.js"></script>
+    <script src="src/main.js"></script>
+</body>
+</html>
