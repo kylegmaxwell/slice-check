@@ -9,24 +9,22 @@
     <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body onload="handleLoad()">
-    <header>
-        <h2>Slice Check</h2>
-    </header>
     <main>
         <section>
-            <details>
-                <summary>Instructions</summary>
-                Tap any tile to reveal it's contents, and hope it's not a bomb.<br/>
-                Tap and hold to mark the tile as a bomb.<br/>
-                When an empty tile's neighboring mines have been marked, tap and hold to reveal its neighbors.<br/>
-            </details>
             <div id="viewport">
                 <!-- THREE -->
             </div>
+            <details>
+                <summary>Instructions</summary>
+                These are the instructions
+            </details>
         </section>
 
     </main>
     <script src="node_modules/three/build/three.js"></script>
+    <script src="node_modules/three/examples/js/loaders/STLLoader.js"></script>
+    <script src="node_modules/three/examples/js/controls/EditorControls.js"></script>
     <script src="src/main.js"></script>
+    <script src="src/App.js"></script>
 </body>
 </html>
