@@ -11,10 +11,12 @@
 <body onload="handleLoad()">
     <main>
         <section>
-            <div id="viewport">
+            <div id="viewport" style="display:inline-block;">
                 <!-- THREE -->
-            </div>
+            </div><br>
             Choose a mesh file: <input type="file" id="meshFile" onchange="loadMesh()">
+            <div id="dicomImage" style="width:512px;height:512px;top:0px;left:0px;background:pink">
+            </div>
             <details>
                 <summary>Instructions</summary>
                 These are the instructions
@@ -22,6 +24,17 @@
         </section>
 
     </main>
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="lib/cornerstone.js"></script>
+    <script src="lib/cornerstoneMath.js"></script>
+    <script src="lib/cornerstoneTools.js"></script>
+    <script src="lib/uids.js"></script>
+
+    <script src="node_modules/dicom-parser/dist/dicomParser.js"></script>
+    <script src="lib/libopenjpeg.js"></script>
+    <script src="lib/libCharLS.js"></script>
+    <script src="lib/cornerstoneWADOImageLoader.js"></script>
+
     <script src="node_modules/three/build/three.js"></script>
     <script src="node_modules/three/examples/js/loaders/STLLoader.js"></script>
     <script src="node_modules/three/examples/js/controls/EditorControls.js"></script>
