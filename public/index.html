@@ -13,10 +13,12 @@
         <section>
             <div id="viewport" style="display:inline-block;">
                 <!-- THREE -->
-            </div><br>
-            Choose a mesh file: <input type="file" id="meshFile" onchange="loadMesh()">
-            <div id="dicomImage" style="width:512px;height:512px;top:0px;left:0px;background:pink">
             </div>
+            <div id="dicomImage" style="width:256px;height:256px;top:0px;left:0px;background:pink;display:inline-block;">
+                <!-- Dicom image loads here and is used as a data url -->
+            </div>
+            <br>
+            Choose a mesh file: <input type="file" id="meshFile" onchange="loadMesh()">
             <details>
                 <summary>Instructions</summary>
                 These are the instructions
@@ -40,5 +42,6 @@
     <script src="node_modules/three/examples/js/controls/EditorControls.js"></script>
     <script src="src/main.js"></script>
     <script src="src/App.js"></script>
+    <script src="src/headerKeys.js"></script>
 </body>
 </html>
