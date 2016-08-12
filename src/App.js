@@ -5,6 +5,7 @@
  */
 function App() {
     this.loader = new THREE.STLLoader();
+    this.currentSlice = -1;
 }
 
 
@@ -26,6 +27,18 @@ App.prototype.addObj = function(obj, parent) {
 
 
 /**
+ * Change the visible slice based on the percentage selection
+ * @param {Number} value Value of slider from 0 to 100
+ */
+App.prototype.changeSlice = function(value) {
+    var children = this.slicesObj.children;
+    children[this.currentSlice].visible = false;
+    this.currentSlice = Math.floor((value*0.01)*(children.length-1));
+    children[this.currentSlice].visible = true;
+    this.render();
+};
+
+/**
  * Load a dicom texture and create a quad to render it in 3D
  *
  * @param {String} imgUrl   Path to image data that can render on a canvas
@@ -43,7 +56,7 @@ App.prototype.loadTexture = function(imgUrl, metadata) {
     var height = 512;
     var pixelWidth = 1.0;
     var pixelHeight = 1.0;
-    console.log(metadata);
+
     var offset = [0,0,0];
     if (metadata) {
         width = metadata.columns ? metadata.columns : width;
@@ -78,6 +91,10 @@ App.prototype.loadTexture = function(imgUrl, metadata) {
 
     mesh.rotation.y = Math.PI;
 
+    if (this.currentSlice !== -1) {
+        this.slicesObj.children[this.currentSlice].visible = false;
+    }
+    this.currentSlice = this.slicesObj.children.length;
     this.addObj(mesh, this.slicesObj);
 };
 
@@ -112,8 +129,8 @@ App.prototype.initThree = function(container) {
     this.scene.add(this.meshesObj);
     this.slicesObj = new THREE.Scene();
     this.scene.add(this.slicesObj);
-    var width = Math.max(window.innerWidth/2,600);
-    var height = Math.max(window.innerHeight/2,500);
+    var width = container.clientWidth;
+    var height = container.clientHeight;
 	this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 10000 );
 	this.renderer = new THREE.WebGLRenderer({
         antialias:true
@@ -172,4 +189,14 @@ App.prototype.addLights = function() {
  */
 App.prototype.render = function() {
     this.renderer.render(this.scene, this.camera);
+};
+
+App.prototype.resize = function(container) {
+
+    var width = container.clientWidth;
+    var height = container.clientHeight;
+    this.camera.aspect = width/height;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize( width, height );
+    this.render();
 };

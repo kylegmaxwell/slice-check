@@ -11,6 +11,17 @@ function handleLoad() {
     app = new App();
     app.initThree(viewport);
     initHeaderMap();
+    window.addEventListener('resize', handleResize);
+}
+
+
+/**
+ * Resize render canvas when window changes
+ */
+function handleResize() {
+    var viewport = document.querySelector('#viewport');
+    app.resize(viewport);
+
 }
 // Data structge for DICOM header offset hash to description mapping
 var headerMap = {};
@@ -25,6 +36,15 @@ function initHeaderMap() {
         var id = 'x'+key.substr(1,4)+key.substr(6,4);
         headerMap[id] = key;
     }
+}
+
+
+/**
+ * Change the displayed texture slice in the 3D view
+ */
+function changeSlice() {
+    var sliceRange = document.querySelector('#sliceRange');
+    app.changeSlice(sliceRange.value);
 }
 
 /**
@@ -71,10 +91,12 @@ function loadDcmFile(file) {
 }
 
 var loaded = false;
-function loadAndViewImage(imageId) {
+var enabled = false;
+function loadAndViewImage(imageId, addControls) {
     var element = $('#dicomImage').get(0);
-    if (!loaded) {
+    if (!enabled) {
         cornerstone.enable(element);
+        enabled = true;
     }
     var start = new Date().getTime();
     cornerstone.loadImage(imageId).then(function(image) {
@@ -83,7 +105,7 @@ function loadAndViewImage(imageId) {
         metadata.toggleModalityLUT = viewport.modalityLUT !== undefined;
         metadata.toggleVOILUT = viewport.voiLUT !== undefined;
         cornerstone.displayImage(element, image, viewport);
-        if(loaded === false) {
+        if(loaded === false && addControls) {
             cornerstoneTools.mouseInput.enable(element);
             cornerstoneTools.mouseWheelInput.enable(element);
             cornerstoneTools.wwwc.activate(element, 1); // ww/wc is the default tool for left mouse button

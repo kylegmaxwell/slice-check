@@ -1,0 +1,24 @@
+html, body { height: 100%; width: 100%; margin: 0; }
+#viewport {
+    width: 70%;
+    float:left;
+    min-height: 300px;
+    height: 80%;
+}
+#dicomImage {
+    background-color: gray;
+    float:right;
+    left: 0%;
+    height: 256px;
+    width: 256px;
+}
+#controls {
+    width: 100%;
+    clear:both;
+}
+#sliceSpan {
+    position: absolute;
+}
+#sliceRange {
+    margin-top: 2.0em;
+}

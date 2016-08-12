@@ -5,27 +5,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Slice Check</title>
-    <!-- <link rel="stylesheet" type="text/css" href="main.css"> -->
+    <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body onload="handleLoad()">
-    <main>
-        <section>
-            <div id="viewport" style="display:inline-block;">
-                <!-- THREE -->
-            </div>
-            <div id="dicomImage" style="width:256px;height:256px;top:0px;left:0px;background:pink;display:inline-block;">
-                <!-- Dicom image loads here and is used as a data url -->
-            </div>
-            <br>
-            Choose a mesh file: <input type="file" id="meshFile" onchange="loadMesh()">
-            <details>
-                <summary>Instructions</summary>
-                These are the instructions
-            </details>
-        </section>
 
-    </main>
+
+    Choose a mesh file: <input type="file" id="meshFile" multiple onchange="loadMesh()">
+    <div id="viewport" class="block">
+        <!-- THREE -->
+    </div>
+    <div id="dicomImage">
+        <span id="sliceSpan">Select slice: </span><input type="range" id="sliceRange" value="0" onchange="changeSlice()">
+        <!-- Dicom image loads here and is used as a data url -->
+    </div>
+    <div id="controls">
+        <details>
+            <summary>Instructions</summary>
+            These are the instructions
+        </details>
+    <div>
+
     <script src="node_modules/jquery/dist/jquery.js"></script>
     <script src="lib/cornerstone.js"></script>
     <script src="lib/cornerstoneMath.js"></script>
