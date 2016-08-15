@@ -9,22 +9,36 @@
     <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body onload="handleLoad()">
-
-
-    Choose a mesh file: <input type="file" id="meshFile" multiple onchange="loadMesh()">
-    <div id="viewport" class="block">
-        <!-- THREE -->
+    <div id="welcome">
+        <h2>Welcome to the Slice Check Application</h2>
+        <p>You may upload your own data or view the sample data to get started.</p>
+        <p><button id="sampleButton" onclick="loadSampleData()">Load sample data</button></p>
+        <p id="or">or</p>
+        <p id="choose">Choose a mesh (stl) or image (dcm) file: </p>
     </div>
-    <div id="dicomImage">
-        <span id="sliceSpan">Select slice: </span><input type="range" id="sliceRange" value="0" onchange="changeSlice()">
-        <!-- Dicom image loads here and is used as a data url -->
+    <input type="file" id="meshFile" multiple onchange="loadFiles()">
+    <div id="main" hidden>
+        <h2 id="status"></h2>
+        <div id="viewport" class="block">
+            <!-- THREE -->
+        </div>
+        <div id="dicomImage">
+            <span id="sliceSpan">Select slice: </span>
+            <input type="range" id="sliceRange" value="0" onchange="changeSlice()">
+            <input type="checkbox" id="checkbox" onchange="changeCrop()">Crop mesh</input>
+            <!-- Dicom image loads here and is used as a data url -->
+        </div>
+        <div id="controls">
+            <details>
+                <summary>Instructions (Click to expand)</summary>
+                On the left hand side is the 3D View.<br>
+                 You can click and drag with the left mouse to rotate the model. Scroll to zoom and right mouse to pan.<br>
+                Then on the right side you can see the slice view. This shows the dicom data currently loaded.<br>
+                To visualize a different slice drag the slider above. <br> You can also toggle the check box to turn on
+                and off clipping of the mesh to the region surrounding the current slice.
+            </details>
+        <div>
     </div>
-    <div id="controls">
-        <details>
-            <summary>Instructions</summary>
-            These are the instructions
-        </details>
-    <div>
 
     <script src="node_modules/jquery/dist/jquery.js"></script>
     <script src="lib/cornerstone.js"></script>
@@ -43,5 +57,6 @@
     <script src="src/main.js"></script>
     <script src="src/App.js"></script>
     <script src="src/headerKeys.js"></script>
+    <script src="src/DicomLoader.js"></script>
 </body>
 </html>

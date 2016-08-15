@@ -1,12 +1,19 @@
-html, body { height: 100%; width: 100%; margin: 0; }
+html, body, #main{
+    height: 100%;
+    width: 100%;
+    /*margin: 0;*/
+    background-color: #bbbbbb;
+}
 #viewport {
     width: 70%;
+    height: 90%;
     float:left;
     min-height: 300px;
-    height: 80%;
+}
+canvas {
+    border-radius: 15px;
 }
 #dicomImage {
-    background-color: gray;
     float:right;
     left: 0%;
     height: 256px;
@@ -21,4 +28,14 @@ html, body { height: 100%; width: 100%; margin: 0; }
 }
 #sliceRange {
     margin-top: 2.0em;
+}
+#sampleButton, #or, #choose {
+    padding: 0.5em;
+    margin: 1.0em;
+}
+#meshFile {
+    margin-left: 2.0em;
+}
+#status {
+    position: absolute;
 }

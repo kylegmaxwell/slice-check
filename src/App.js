@@ -5,9 +5,43 @@
  */
 function App() {
     this.loader = new THREE.STLLoader();
+    this.scene = new THREE.Scene();
+    this.meshesObj = new THREE.Object3D();
+    this.scene.add(this.meshesObj);
+    this.slicesObj = new THREE.Object3D();
+    this.scene.add(this.slicesObj);
+    this.slices = [];
+    this.camera = null;
+    this.renderer = null;
+    this.controls = null;
     this.currentSlice = -1;
+    this.globalPlanes = [
+        new THREE.Plane( new THREE.Vector3( 0, 0, 1 ), 140 ),
+        new THREE.Plane( new THREE.Vector3( 0, 0, -1 ), -120 )
+    ];
+    this.noClip = Object.freeze( [] );
 }
 
+
+/**
+ * Turn on or off global clipping planes to trim mesh to slice
+ * @param {Boolean} active  Whether clipping is on or off
+ * @param {Number} minDist Minimum distance from origin in slice direction to render
+ * @param {Number} maxDist Maximum distance from origin in slice direction to render
+ *
+ * @return {type} Description
+ */
+App.prototype.setClipping = function(active, minDist, maxDist) {
+    if (!active) {
+        this.renderer.clippingPlanes = this.noClip;
+        return;
+    }
+    if (minDist !== undefined)
+        this.globalPlanes[0].constant = -1 * minDist;
+    if (maxDist !== undefined)
+        this.globalPlanes[1].constant = maxDist;
+    this.renderer.clippingPlanes = this.globalPlanes; // Later set it to globalPlanes
+};
 
 /**
  * Add an object and prepare it for rendering
@@ -21,6 +55,7 @@ App.prototype.addObj = function(obj, parent) {
     }
     parent.add( obj );
     // THREE.EditorControls is buggy in determining the center point, so focus is disabled here
+    // TODO set center point manually
     // this.controls.focus(parent, true);
     this.render();
 };
@@ -30,11 +65,17 @@ App.prototype.addObj = function(obj, parent) {
  * Change the visible slice based on the percentage selection
  * @param {Number} value Value of slider from 0 to 100
  */
-App.prototype.changeSlice = function(value) {
+App.prototype.changeSlice = function(value, doCrop, ctx) {
+    var i = this.currentSlice;
+    if (i === -1) return;
     var children = this.slicesObj.children;
-    children[this.currentSlice].visible = false;
-    this.currentSlice = Math.floor((value*0.01)*(children.length-1));
-    children[this.currentSlice].visible = true;
+    children[i].visible = false;
+    i = Math.floor((value*0.01)*(children.length-1));
+    this.currentSlice = i;
+    children[i].visible = true;
+    var pos = children[i].position;
+    this.setClipping(doCrop, pos.z - 20, pos.z + 20);
+    ctx.putImageData(this.slices[i],0,0);
     this.render();
 };
 
@@ -46,7 +87,7 @@ App.prototype.changeSlice = function(value) {
  *
  * @return {type} Description
  */
-App.prototype.loadTexture = function(imgUrl, metadata) {
+App.prototype.loadTexture = function(imgUrl, imgData, metadata) {
 	var textureLoader = new THREE.TextureLoader();
     var _this = this;
 	var texture1 = textureLoader.load( imgUrl, function () {
@@ -73,12 +114,11 @@ App.prototype.loadTexture = function(imgUrl, metadata) {
         offset[2] += metadata.imagePositionPatient[2];
 
     }
+
     // Texture card geometry
-	var material = new THREE.MeshStandardMaterial( {
-        emissive: 0xffffff,
-        emissiveMap: texture1,
-        metalness: 0,
-        roughness: 0.6,
+	var material = new THREE.MeshBasicMaterial( {
+        color: 0xffffff,
+        map: texture1,
         side: THREE.DoubleSide
      } );
     var geometry = new THREE.PlaneBufferGeometry( width, height, 1, 1 );
@@ -89,6 +129,7 @@ App.prototype.loadTexture = function(imgUrl, metadata) {
     mesh.position.y -= offset[1] + height / 2;
     mesh.position.z += offset[2];
 
+    //TODO this should use imageOrientationPatient
     mesh.rotation.y = Math.PI;
 
     if (this.currentSlice !== -1) {
@@ -96,25 +137,27 @@ App.prototype.loadTexture = function(imgUrl, metadata) {
     }
     this.currentSlice = this.slicesObj.children.length;
     this.addObj(mesh, this.slicesObj);
+    this.slices.push(imgData);
 };
 
 /**
  * loadStl - Function to load an stl file for rendering as a mesh
+ * @param {String} stlUrl The url of the mesh file
+ * @param {Function} cb Callback function to indicate completion
  */
-App.prototype.loadStl = function(stlUrl) {
+App.prototype.loadStl = function(stlUrl, cb) {
     var _this = this;
     this.loader.load( stlUrl, function ( geometry ) {
 		var material = new THREE.MeshPhysicalMaterial( {
             color: 0xff5533,
-            transparent: true,
-            opacity: 0.9,
             roughness: 0.7,
-            metalness: 0.6
+            metalness: 0.6,
+            side: THREE.DoubleSide
         } );
 		var mesh = new THREE.Mesh( geometry, material );
         _this.addObj(mesh, _this.meshesObj);
         _this.controls.focus(mesh, true);
-
+        cb();
 	} );
 };
 
@@ -124,11 +167,6 @@ App.prototype.loadStl = function(stlUrl) {
  * @param {Element} container DOM element to contain the render canvas
  */
 App.prototype.initThree = function(container) {
-    this.scene = new THREE.Scene();
-    this.meshesObj = new THREE.Scene();
-    this.scene.add(this.meshesObj);
-    this.slicesObj = new THREE.Scene();
-    this.scene.add(this.slicesObj);
     var width = container.clientWidth;
     var height = container.clientHeight;
 	this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 10000 );
@@ -136,8 +174,9 @@ App.prototype.initThree = function(container) {
         antialias:true
     });
     this.renderer.sortObjects = false;
-    this.renderer.setClearColor( 0x000000 );
+    this.renderer.setClearColor( 0xcccccc );
 	this.renderer.setSize( width, height );
+    this.setClipping(false);
 	container.appendChild( this.renderer.domElement );
     this.camera.position.x = 300;
     this.camera.position.y = 300;
@@ -154,10 +193,8 @@ App.prototype.initThree = function(container) {
     this.scene.add( axisHelper );
 
     this.addLights();
-    this.loadStl('data/tissue.stl');
 	this.render();
 };
-
 
 /**
  * addLights - Add some lights to the three.js scene
@@ -183,7 +220,6 @@ App.prototype.addLights = function() {
     this.scene.add( light );
 };
 
-
 /**
  * render - Render the scene
  */
@@ -192,9 +228,8 @@ App.prototype.render = function() {
 };
 
 App.prototype.resize = function(container) {
-
-    var width = container.clientWidth;
-    var height = container.clientHeight;
+    var width = Math.floor(container.clientWidth);
+    var height = Math.floor(container.clientHeight);
     this.camera.aspect = width/height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize( width, height );
