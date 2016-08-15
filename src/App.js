@@ -10,11 +10,11 @@ function App() {
     this.scene.add(this.meshesObj);
     this.slicesObj = new THREE.Object3D();
     this.scene.add(this.slicesObj);
-    this.slices = [];
     this.camera = null;
     this.renderer = null;
     this.controls = null;
     this.currentSlice = -1;
+    this.sortedSlices = [];
     this.globalPlanes = [
         new THREE.Plane( new THREE.Vector3( 0, 0, 1 ), 140 ),
         new THREE.Plane( new THREE.Vector3( 0, 0, -1 ), -120 )
@@ -68,14 +68,15 @@ App.prototype.addObj = function(obj, parent) {
 App.prototype.changeSlice = function(value, doCrop, ctx) {
     var i = this.currentSlice;
     if (i === -1) return;
-    var children = this.slicesObj.children;
-    children[i].visible = false;
-    i = Math.floor((value*0.01)*(children.length-1));
+    this.sortedSlices[this.currentSlice].mesh.visible = false;
+    var slices = this.sortedSlices;
+    slices[i].mesh.visible = false;
+    i = Math.floor(((100-value)*0.01)*(slices.length-1));
     this.currentSlice = i;
-    children[i].visible = true;
-    var pos = children[i].position;
+    slices[i].mesh.visible = true;
+    var pos = slices[i].mesh.position;
     this.setClipping(doCrop, pos.z - 20, pos.z + 20);
-    ctx.putImageData(this.slices[i],0,0);
+    ctx.putImageData(slices[i].imgData,0,0);
     this.render();
 };
 
@@ -133,11 +134,38 @@ App.prototype.loadTexture = function(imgUrl, imgData, metadata) {
     mesh.rotation.y = Math.PI;
 
     if (this.currentSlice !== -1) {
-        this.slicesObj.children[this.currentSlice].visible = false;
+        this.sortedSlices[this.currentSlice].mesh.visible = false;
     }
-    this.currentSlice = this.slicesObj.children.length;
     this.addObj(mesh, this.slicesObj);
-    this.slices.push(imgData);
+    this.currentSlice = this.insertSortedSlice({
+        imgUrl: imgUrl,
+        imgData: imgData,
+        metadata: metadata,
+        mesh: mesh,
+        z: metadata.imagePositionPatient[2]
+    });
+};
+
+/**
+ * Insert a new slice into the sorted list
+ * @param {Object} newSlice JSON object map containing slice info
+ * @return {Number} The position in the list where it was inserted
+ */
+App.prototype.insertSortedSlice = function(newSlice) {
+    // Check if the new slice can simply go on the end
+    if (this.sortedSlices.length === 0 || newSlice.z >= this.sortedSlices[this.sortedSlices.length-1].z) {
+        this.sortedSlices.push(newSlice);
+        return this.sortedSlices.length-1;
+    }
+    //TODO binary search
+    for (var i=0;i<this.sortedSlices.length;i++) {
+        var slice = this.sortedSlices[i];
+        if (newSlice.z < slice.z) {
+             this.sortedSlices.splice(i, 0, newSlice);
+             console.log(i, newSlice.z);
+             return i;
+        }
+    }
 };
 
 /**

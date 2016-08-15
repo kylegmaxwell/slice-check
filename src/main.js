@@ -80,8 +80,9 @@ function attachListeners(range) {
  */
 function handleResize() {
     var viewport = document.querySelector('#viewport');
-    app.resize(viewport);
-
+    if (app.renderer) {
+        app.resize(viewport);
+    }
 }
 
 
@@ -121,6 +122,7 @@ function loaded() {
     loadCount--;
     if (loadCount===0) {
         setStatus('');
+        changeSlice();
     }
 }
 /**
