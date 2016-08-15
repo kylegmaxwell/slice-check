@@ -162,7 +162,6 @@ App.prototype.insertSortedSlice = function(newSlice) {
         var slice = this.sortedSlices[i];
         if (newSlice.z < slice.z) {
              this.sortedSlices.splice(i, 0, newSlice);
-             console.log(i, newSlice.z);
              return i;
         }
     }
