@@ -7,7 +7,6 @@ function MeshCut() {
  * @return {THREE.BufferGeometry}  Resulting geometry
  */
 MeshCut.trimMeshToPlane = function(geometry) {
-    console.log('trim');
     var pos = geometry.attributes.position.array;
     var posArr = [];
     for (var i=0;i<pos.length;i+=9) {

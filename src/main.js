@@ -9,6 +9,13 @@ var loadCount = 0;
  * Initialize the app when the page first loads
  */
 function handleLoad() {
+    // Enable button now that callbacks are available
+    var loading = document.querySelector('#loading');
+    loading.setAttribute('hidden', '');
+
+    var welcome = document.querySelector('#welcome');
+    welcome.removeAttribute('hidden');
+
     var viewport = document.querySelector('#viewport');
     app = new App();
     initHeaderMap();
@@ -32,8 +39,13 @@ var mainLoaded = false;
  * Setup the main view for the application after the welcome screen
  */
 function initMain(count) {
+
+    var main = document.querySelector('#main');
+    var meshFile = document.querySelector('#meshFile');
+    main.appendChild(meshFile);
+
     loadCount = count;
-    setStatus('Loading...');
+    setStatus('Loading geometry...');
     if (mainLoaded) return;
     mainLoaded = true;
     welcome.setAttribute('hidden', true);

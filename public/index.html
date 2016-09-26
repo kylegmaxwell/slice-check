@@ -9,14 +9,17 @@
     <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body onload="handleLoad()">
-    <div id="welcome">
+    <div id="loading">
+        <h1>Loading slice check...</h1>
+    </div>
+    <div id="welcome" hidden>
         <h2>Welcome to the Slice Check Application</h2>
         <p>You may upload your own data or view the sample data to get started.</p>
         <p><button id="sampleButton" onclick="loadSampleData()">Load sample data</button></p>
         <p id="or">or</p>
         <p id="choose">Choose a mesh (stl) or image (dcm) file: </p>
+        <input type="file" id="meshFile" multiple onchange="loadFiles()">
     </div>
-    <input type="file" id="meshFile" multiple onchange="loadFiles()">
     <div id="main" hidden>
         <h2 id="status"></h2>
         <div id="viewport" class="block">
