@@ -10,6 +10,8 @@ function App() {
     this.scene.add(this.meshesObj);
     this.slicesObj = new THREE.Object3D();
     this.scene.add(this.slicesObj);
+    this.testObj = new THREE.Object3D();
+    this.scene.add(this.testObj);
     this.camera = null;
     this.renderer = null;
     this.controls = null;
@@ -78,6 +80,70 @@ App.prototype.changeSlice = function(value, doCrop, ctx) {
     this.setClipping(doCrop, pos.z - 20, pos.z + 20);
     ctx.putImageData(slices[i].imgData,0,0);
     this.render();
+
+    this.renderSliceOverlap();
+};
+
+
+/**
+ * Determine where the mesh overlaps the current slice and render as a line
+ */
+App.prototype.renderSliceOverlap = function() {
+    // Get the mesh geometry and transform it into image space
+    var mesh = this.sortedSlices[this.currentSlice].mesh;
+    mesh.updateMatrixWorld();
+    var m = new THREE.Matrix4().getInverse(mesh.matrixWorld);
+    var material = new THREE.MeshPhongMaterial( {
+        color: 0xffffff,
+        side: THREE.DoubleSide
+     } );
+    var geometry = this.meshesObj.children[0].geometry.clone().applyMatrix(m);
+
+    // Trim the mesh to just the triangels that cross the image plane
+    var cutGeometry = MeshCut.trimMeshToPlane(geometry);
+    this.drawCutGeometry(cutGeometry);
+
+    // Draw the trimmed triangles for debugging.
+    var cutMesh = new THREE.Mesh(cutGeometry, material);
+    if (this.testObj.children.length > 0) {
+        this.testObj.children[0].geometry.dispose();
+        this.testObj.children[0] = cutMesh;
+    } else {
+        this.testObj.children.push(cutMesh);
+    }
+};
+
+/**
+ * Draw the outline of the cross section where the mesh is cut by the image
+ * @param {THREE.BufferGeometry} geometry The trianges that are crossing the image
+ */
+App.prototype.drawCutGeometry = function(geometry) {
+    // TODO this canvas should be passed in, not accessed directly
+    var canvas = document.querySelector('#dicomImage > canvas');
+    if (!canvas) {
+        console.warn('Could not find image canvas.');
+        return;
+    }
+    var ctx = canvas.getContext('2d');
+    ctx.strokeStyle="#FF0000";
+    ctx.beginPath();
+    // TODO not sure why the canvs is 256 pixels, but the height must be 512
+    var SCALE_HACK = 2.0;
+    var width = SCALE_HACK*canvas.width;
+    var height = SCALE_HACK*canvas.height;
+    var pos = geometry.attributes.position.array;
+    for (var i=0;i<pos.length;i+=9) {
+        var z0 = pos[i+2];
+        var z1 = pos[i+5];
+        var z2 = pos[i+8];
+        var offsets = MeshCut.findCrossingOffsets([z0, z1, z2]);
+        if (offsets == null) { console.warn(i, 'not crossing'); }
+        var c0 = MeshCut.findCrossingPoint(offsets[0], pos, i, width, height);
+        var c1 = MeshCut.findCrossingPoint(offsets[1], pos, i, width, height);
+        ctx.moveTo(c0[0], c0[1]);
+        ctx.lineTo(c1[0], c1[1]);
+    }
+    ctx.stroke();
 };
 
 /**
@@ -107,8 +173,8 @@ App.prototype.loadTexture = function(imgUrl, imgData, metadata) {
             var dims = metadata.pixelSpacing.split('\\');
             pixelWidth = parseFloat(dims[0]);
             pixelHeight = parseFloat(dims[1]);
-            width = Math.floor(width*pixelWidth);
-            height = Math.floor(height*pixelHeight);
+            width = width*pixelWidth;
+            height = height*pixelHeight;
         }
         offset[0] += metadata.imagePositionPatient[0];
         offset[1] += metadata.imagePositionPatient[1];
@@ -122,13 +188,17 @@ App.prototype.loadTexture = function(imgUrl, imgData, metadata) {
         map: texture1,
         side: THREE.DoubleSide
      } );
-    var geometry = new THREE.PlaneBufferGeometry( width, height, 1, 1 );
+    var geometry = new THREE.PlaneBufferGeometry( 1, 1, 1, 1 );
+
     var mesh = new THREE.Mesh( geometry, material );
     // Still figuring this out, perhaps the uv's should go 0 to 1-pixel?
     var OFFSET_HACK = 2;
     mesh.position.x += OFFSET_HACK + offset[0] * pixelWidth;
     mesh.position.y -= offset[1] + height / 2;
     mesh.position.z += offset[2];
+
+    mesh.scale.x = width;
+    mesh.scale.y = height;
 
     //TODO this should use imageOrientationPatient
     mesh.rotation.y = Math.PI;
