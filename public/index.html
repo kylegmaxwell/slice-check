@@ -8,14 +8,14 @@
     <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="shortcut icon" href="favicon.ico">
 </head>
-<body onload="handleLoad()">
+<body>
     <div id="loading">
         <h1>Loading slice check...</h1>
     </div>
     <div id="welcome" hidden>
         <h2>Welcome to the Slice Check Application</h2>
         <p>You may upload your own data or view the sample data to get started.</p>
-        <p><button id="sampleButton" onclick="loadSampleData()">Load sample data</button></p>
+        <p><button id="sampleButton">Load sample data</button></p>
         <p id="or">or</p>
         <p id="choose">Choose a mesh (stl) or image (dcm) file: </p>
         <input type="file" id="meshFile" multiple onchange="loadFiles()">
@@ -27,8 +27,9 @@
         </div>
         <div id="dicomImage">
             <span id="sliceSpan">Select slice: </span>
-            <input type="range" id="sliceRange" value="0" onchange="changeSlice()">
-            <input type="checkbox" id="checkbox" onchange="changeCrop()">Crop mesh</input>
+            <!-- Listeners are added in main.js -->
+            <input type="range" id="sliceRange" value="0">
+            <input type="checkbox" id="checkboxCrop">Crop mesh</input>
             <!-- Dicom image loads here and is used as a data url -->
         </div>
         <div id="controls">
@@ -53,13 +54,18 @@
     <script src="lib/libopenjpeg.js"></script>
     <script src="lib/libCharLS.js"></script>
     <script src="lib/cornerstoneWADOImageLoader.js"></script>
-
-    <script src="node_modules/three/build/three.js"></script>
-    <script src="node_modules/three/examples/js/loaders/STLLoader.js"></script>
-    <script src="node_modules/three/examples/js/controls/EditorControls.js"></script>
-    <script src="src/main.js"></script>
-    <script src="src/MeshCut.js"></script>
-    <script src="src/App.js"></script>
+	
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./node_modules/three/build/three.module.js",
+                "three/addons/": "./node_modules/three/examples/jsm/"
+            }
+        }
+    </script>
+    <script src="src/main.js" type="module"></script>
+    <script src="src/MeshCut.js" type="module"></script>
+    <script src="src/App.js" type="module"></script>
     <script src="src/headerKeys.js"></script>
     <script src="src/DicomLoader.js"></script>
 </body>

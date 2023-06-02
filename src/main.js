@@ -1,9 +1,9 @@
 'use-strict';
 
+import { App } from "./App.js";
+
 // Appliation entry point for object oriented model
 var app;
-var imageCanvas;
-var imageCtx;
 var loadCount = 0;
 /**
  * Initialize the app when the page first loads
@@ -27,7 +27,7 @@ function handleLoad() {
 function setStatus(msg) {
     var status = document.querySelector('#status');
     if (msg !== '') {
-        status.textContent=msg;
+        status.textContent = msg;
         status.removeAttribute('hidden');
     } else {
         status.setAttribute('hidden', true);
@@ -58,12 +58,12 @@ function initMain(count) {
  * Source: http://www.osirix-viewer.com/datasets/
  * And I created the mesh using https://www.slicer.org/
  */
-function loadSampleData() {
+export function loadSampleData() {
     var welcome = document.querySelector('#welcome');
     var main = document.querySelector('#main');
     app.loadStl('data/sample/tissue.stl', loaded);
-    for (var i=381; i<461; i+=10) {
-        fetchDcmFile('data/sample/IM-0001-0'+i+'.dcm');
+    for (var i = 381; i < 461; i += 10) {
+        fetchDcmFile('data/sample/IM-0001-0' + i + '.dcm');
     }
     initMain(9);
 }
@@ -75,11 +75,11 @@ function loadSampleData() {
 function attachListeners(range) {
     var mousedown = false;
     var requested = false;
-    range.addEventListener('mousemove', function (e) {
+    range.addEventListener('mousemove', (e) => {
         // Mouse button 1 is down (aka dragging)
         if (e.buttons === 1 && !requested) {
             requested = true;
-            window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(() => {
                 requested = false;
                 changeSlice();
             });
@@ -112,10 +112,10 @@ var headerMap = {};
  */
 function initHeaderMap() {
     var keys = headerKeys.split('\n');
-    for (var i=0;i<keys.length;i++) {
+    for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        if (key[0]!=='(') continue;
-        var id = 'x'+key.substr(1,4)+key.substr(6,4);
+        if (key[0] !== '(') continue;
+        var id = 'x' + key.substr(1, 4) + key.substr(6, 4);
         headerMap[id] = key;
     }
 }
@@ -126,13 +126,13 @@ function initHeaderMap() {
  */
 function changeSlice() {
     var sliceRange = document.querySelector('#sliceRange');
-    var checkbox = document.querySelector('#checkbox');
-    app.changeSlice(sliceRange.value, checkbox.checked, imageCtx);
+    var checkbox = document.querySelector('#checkboxCrop');
+    app.changeSlice(sliceRange.value, checkbox.checked, app.imageCtx);
 }
 
 function loaded() {
     loadCount--;
-    if (loadCount===0) {
+    if (loadCount === 0) {
         setStatus('');
         changeSlice();
     }
@@ -144,16 +144,16 @@ function loadFiles() {
     var selector = document.querySelector('#meshFile');
     var files = selector.files;
     var count = 0;
-    for (var i=0;i<files.length;i++) {
+    for (var i = 0; i < files.length; i++) {
         var file = files[i];
-        if (file.name.indexOf('.stl')!==-1) {
+        if (file.name.indexOf('.stl') !== -1) {
             count++;
             loadStlFile(file);
-        } else if (file.name.indexOf('.dcm')!==-1) {
+        } else if (file.name.indexOf('.dcm') !== -1) {
             count++;
             loadDcmFile(file);
         } else {
-            console.log('Unknown file',file);
+            console.log('Unknown file', file);
         }
     }
     initMain(count);
@@ -164,8 +164,8 @@ function loadFiles() {
  * @param {File} file Handle to a local file on the user's computer
  */
 function loadStlFile(file) {
-    var reader  = new FileReader();
-    reader.addEventListener("load", function () {
+    var reader = new FileReader();
+    reader.addEventListener("load", () => {
         app.loadStl(reader.result, loaded);
     }, false);
     if (file) {
@@ -179,9 +179,9 @@ function loadStlFile(file) {
  * @param {String} url The resource location (path)
  */
 function fetchDcmFile(url) {
-    fetch(new Request(url)).then(function(response) {
+    fetch(new Request(url)).then((response) => {
         return response.blob();
-    }).then(function(blob) {
+    }).then((blob) => {
         loadDcmFile(blob);
     });
 }
@@ -195,7 +195,23 @@ function fetchDcmFile(url) {
 function loadDcmFile(file) {
     var imageId = cornerstoneWADOImageLoader.fileManager.add(file);
     // Timeout to wait for the welcome page to hide so that the canvas can be created with non zero
-    setTimeout(function () {
-        DicomLoader.loadAndViewImage(imageId, false, loaded);
+    setTimeout(() => {
+        new DicomLoader().loadAndViewImage(imageId, false, loaded, app);
     });
 }
+
+
+// SETUP DOM HOOKS
+
+document.getElementById('sampleButton').addEventListener('click', () => {
+    loadSampleData();
+})
+document.getElementById('sliceRange').addEventListener('change', () => {
+    changeSlice();
+})
+document.getElementById('checkboxCrop').addEventListener('change', () => {
+    changeCrop();
+})
+
+
+handleLoad();
