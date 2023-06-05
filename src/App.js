@@ -2,8 +2,8 @@
 
 import * as THREE from '../node_modules/three/build/three.module.js';
 
-import { STLLoader } from '../node_modules/three/examples/jsm/loaders/STLLoader.js';
-import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import { STLLoader } from '../lib/STLLoader.js';
+import { OrbitControls } from '../lib/OrbitControls.js';
 import { MeshCut } from "./MeshCut.js"
 
 // TODO this is hard coded to the sample data
