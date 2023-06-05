@@ -5,7 +5,7 @@ body, #main{
     width: 70%;
     height: 90%;
     float:left;
-    min-height: 300px;
+    min-height: 400px;
 }
 canvas {
     border-radius: 15px;

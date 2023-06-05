@@ -6,6 +6,9 @@ import { STLLoader } from '../node_modules/three/examples/jsm/loaders/STLLoader.
 import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { MeshCut } from "./MeshCut.js"
 
+// TODO this is hard coded to the sample data
+const SLICE_HEIGHT_SEPARATION = 20;
+
 /**
  * App - Application entry point
  */
@@ -25,9 +28,10 @@ export class App {
         this.controls = null;
         this.currentSlice = -1;
         this.sortedSlices = [];
+        // TODO this is hard coded to the sample data
         this.globalPlanes = [
-            new THREE.Plane(new THREE.Vector3(0, 0, 1), 140),
-            new THREE.Plane(new THREE.Vector3(0, 0, -1), -120)
+            new THREE.Plane(new THREE.Vector3(0, 1, 0), 140),
+            new THREE.Plane(new THREE.Vector3(0, -1, 0), -120)
         ];
         this.noClip = Object.freeze([]);
     }
@@ -85,7 +89,7 @@ export class App {
         this.currentSlice = i;
         slices[i].mesh.visible = true;
         var pos = slices[i].mesh.position;
-        this.setClipping(doCrop, pos.z - 20, pos.z + 20);
+        this.setClipping(doCrop, pos.y - SLICE_HEIGHT_SEPARATION, pos.y + SLICE_HEIGHT_SEPARATION);
         ctx.putImageData(slices[i].imgData, 0, 0);
         this.render();
 
@@ -135,7 +139,7 @@ export class App {
         var ctx = canvas.getContext('2d');
         ctx.strokeStyle = "#FF0000";
         ctx.beginPath();
-        // TODO not sure why the canvs is 256 pixels, but the height must be 512
+        // TODO not sure why the canvas is 256 pixels, but the height must be 512
         var SCALE_HACK = 2.0;
         var width = SCALE_HACK * canvas.width;
         var height = SCALE_HACK * canvas.height;
@@ -190,25 +194,28 @@ export class App {
         }
 
         // Texture card geometry
-        var material = new THREE.MeshBasicMaterial({
+        const material = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             map: texture1,
             side: THREE.DoubleSide
         });
-        var geometry = new THREE.PlaneGeometry(1, 1, 1, 1);
+        const geometry = new THREE.PlaneGeometry(1, 1, 1, 1);
+        const mesh = new THREE.Mesh(geometry, material);
 
-        var mesh = new THREE.Mesh(geometry, material);
-        // Still figuring this out, perhaps the uv's should go 0 to 1-pixel?
-        var OFFSET_HACK = 2;
+        // TODO this is hard coded to the sample data
+        // This seems to be somewhat of a lucky guess plus a hack
+        const OFFSET_HACK = 2;
         mesh.position.x += OFFSET_HACK + offset[0] * pixelWidth;
-        mesh.position.y -= offset[1] + height / 2;
-        mesh.position.z += offset[2];
+        mesh.position.z -= offset[1] + height / 2;
+        mesh.position.y -= offset[2] - 0;
 
         mesh.scale.x = width;
         mesh.scale.y = height;
 
         //TODO this should use imageOrientationPatient
         mesh.rotation.y = Math.PI;
+        // TODO this is hard coded to the sample data
+        mesh.rotation.x = Math.PI / 2;
 
         if (this.currentSlice !== -1) {
             this.sortedSlices[this.currentSlice].mesh.visible = false;
@@ -257,10 +264,15 @@ export class App {
                 metalness: 0.6,
                 side: THREE.DoubleSide
             });
+            // TODO this is hard coded to the sample data
+            geometry.rotateX(Math.PI / 2);
             var mesh = new THREE.Mesh(geometry, material);
+
             this.addObj(mesh, this.meshesObj);
-            this.controls.target = mesh.geometry.computeBoundingSphere();
+            mesh.geometry.computeBoundingSphere();
             this.controls.target = mesh.geometry.boundingSphere.center;
+            this.controls.update();
+
             cb();
         });
     }
@@ -273,7 +285,9 @@ export class App {
     initThree(container) {
         var width = container.clientWidth;
         var height = container.clientHeight;
-        this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
+        // narrow field of view to reduce perspective distortion
+        const FOV = 10;
+        this.camera = new THREE.PerspectiveCamera(FOV, width / height, 0.1, 10000);
         this.renderer = new THREE.WebGLRenderer({
             antialias: true
         });
@@ -282,11 +296,11 @@ export class App {
         this.renderer.setSize(width, height);
         this.setClipping(false);
         container.appendChild(this.renderer.domElement);
-        this.camera.position.x = 300;
-        this.camera.position.y = 300;
-        this.camera.position.z = 300;
+        // TODO this is hard coded to the sample data
+        this.camera.position.x = 900;
+        this.camera.position.y = 900;
+        this.camera.position.z = 900;
         this.controls = new OrbitControls(this.camera, container);
-
         this.controls.addEventListener('change', () => {
             this.render();
         });
